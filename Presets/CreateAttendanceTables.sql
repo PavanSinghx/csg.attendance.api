@@ -1,0 +1,58 @@
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'attendancedb')
+	BEGIN
+		CREATE DATABASE attendancedb;
+	END
+GO
+
+USE attendancedb
+
+DROP TABLE IF EXISTS tb_ClassList;
+DROP TABLE IF EXISTS tb_Class;
+DROP TABLE IF EXISTS tb_Teacher;
+DROP TABLE IF EXISTS tb_Learner;
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'tb_Teacher')
+	BEGIN
+		CREATE TABLE tb_Teacher (
+		  TeacherId INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+		  FirebaseUid VARCHAR(MAX) NOT NULL,
+		  Firstnames VARCHAR(MAX) NOT NULL,
+		  Surname VARCHAR(MAX) NOT NULL
+		);
+	END
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'tb_Learner')
+	BEGIN
+		CREATE TABLE tb_Learner (
+		  LearnerId INT NOT NULL PRIMARY KEY,
+		  Firstnames VARCHAR(MAX) NOT NULL,
+		  Surname VARCHAR(MAX) NOT NULL
+		);
+	END
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'tb_Class')
+	BEGIN
+		CREATE TABLE tb_Class (
+		  ClassId INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+		  ClassDescription VARCHAR(MAX) NOT NULL,
+		  TeacherId INT NOT NULL FOREIGN KEY REFERENCES tb_Teacher(TeacherId),
+		);
+	END
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'tb_ClassList')
+	BEGIN
+		CREATE TABLE tb_ClassList (
+		  ClassId INT NOT NULL FOREIGN KEY REFERENCES tb_Class(ClassId),
+		  LearnerId INT NOT NULL FOREIGN KEY REFERENCES tb_Learner(LearnerId),
+		  Attendance BIT NOT NULL DEFAULT 0,
+		  Active BIT NOT NULL DEFAULT 0,
+		  PRIMARY KEY (ClassId, LearnerId)
+		);
+	END
+GO
+
+insert into tb_Learner
+values (3,'ty','ret')

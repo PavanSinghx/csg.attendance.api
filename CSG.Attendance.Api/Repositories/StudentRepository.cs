@@ -24,11 +24,14 @@ namespace CSG.Attendance.Api.Repositories
 
         public Task<List<TbLearner>> GetAllRegisteredStudentsForClassAsync(int classId)
         {
-            var learnerTask = this.attendanceContext.TbClassList.Where(l => l.ClassId == classId)
-                                                                .Select(l => l.Learner)
-                                                                .ToListAsync();
+            using (attendanceContext)
+            {
+                var learnerTask = this.attendanceContext.TbClassList.Where(l => l.ClassId == classId)
+                                                    .Select(l => l.Learner)
+                                                    .ToListAsync();
 
-            return learnerTask;
+                return learnerTask;
+            }
         }
     }
 }

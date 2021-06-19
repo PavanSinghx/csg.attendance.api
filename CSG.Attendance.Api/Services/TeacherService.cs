@@ -2,6 +2,7 @@
 using CSG.Attendance.Api.Models;
 using CSG.Attendance.Api.Models.Mappings;
 using CSG.Attendance.Api.Models.Request;
+using CSG.Attendance.Api.Models.Response;
 using CSG.Attendance.Api.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,6 @@ namespace CSG.Attendance.Api.Services
 {
     public class TeacherService : ITeacherService
     {
-        private readonly IHttpContextAccessor httpContext;
         private readonly IRepository<TbTeacher> teacherRepository;
         private readonly IRepository<TbClassList> classListRepository;
         private readonly IRepository<TbLearner> learnerRepository;
@@ -26,16 +26,12 @@ namespace CSG.Attendance.Api.Services
         private readonly IStudentRepository studentRepository;
         private readonly IMemoryCacheService memoryCacheService;
 
-        private JwtSettings jwtSettings { get; set; }
-
         private ClassSettings classSettings { get; set; }
 
-        public TeacherService(IHttpContextAccessor httpContext, IOptions<ClassSettings> classSettings, IOptions<JwtSettings> jwtSettings, IRepository<TbTeacher> teacherRepository, IRepository<TbClassList> classListRepository,
+        public TeacherService(IOptions<ClassSettings> classSettings, IRepository<TbTeacher> teacherRepository, IRepository<TbClassList> classListRepository,
                               IRepository<TbLearner> learnerRepository, IRepository<TbClass> classRepository, IStudentRepository studentRepository, IMemoryCacheService memoryCacheService)
         {
-            this.jwtSettings = jwtSettings.Value;
             this.classSettings = classSettings.Value;
-            this.httpContext = httpContext;
             this.teacherRepository = teacherRepository;
             this.classListRepository = classListRepository;
             this.learnerRepository = learnerRepository;
@@ -54,7 +50,7 @@ namespace CSG.Attendance.Api.Services
             registerTeacher.Surname.ThrowIfNullEmptyOrWhiteSpace("Surname");
             registerTeacher.FirebaseUserId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
 
-            var cachedValue = this.memoryCacheService.RetrieveValue<string, int>(registerTeacher.FirebaseUserId);
+            var cachedValue = this.memoryCacheService.RetrieveValue<string, TeacherCache>(registerTeacher.FirebaseUserId);
 
             if (cachedValue != default)
             {
@@ -94,7 +90,17 @@ namespace CSG.Attendance.Api.Services
 
             await this.teacherRepository.AddAsync(teacher);
 
-            this.memoryCacheService.SetValue<string, int>(registerTeacher.FirebaseUserId, teacher.TeacherId);
+            var cache = new TeacherCache
+            {
+                TeacherId = teacher.TeacherId,
+                Classes = classEntryList.Select(cl => new ClassResponse
+                {
+                    ClassId = cl.ClassId,
+                    ClassDescription = cl.ClassDescription
+                }).ToList()
+            };
+
+            this.memoryCacheService.SetValue<string, TeacherCache>(registerTeacher.FirebaseUserId, cache);
         }
     }
 }

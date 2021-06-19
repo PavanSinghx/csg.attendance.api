@@ -34,7 +34,7 @@ namespace CSG.Attendance.Api.Models.Mappings
             modelBuilder.Entity<TbClass>(entity =>
             {
                 entity.HasKey(e => e.ClassId)
-                    .HasName("PK__tb_Class__CB1927C093A6AC6F");
+                    .HasName("PK__tb_Class__CB1927C07FB28765");
 
                 entity.ToTable("tb_Class");
 
@@ -46,13 +46,13 @@ namespace CSG.Attendance.Api.Models.Mappings
                     .WithMany(p => p.TbClass)
                     .HasForeignKey(d => d.TeacherId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__tb_Class__Teache__75A278F5");
+                    .HasConstraintName("FK__tb_Class__Teache__19DFD96B");
             });
 
             modelBuilder.Entity<TbClassList>(entity =>
             {
                 entity.HasKey(e => new { e.ClassId, e.LearnerId })
-                    .HasName("PK__tb_Class__7D63980D71ABF603");
+                    .HasName("PK__tb_Class__7D63980D7BBDC4DA");
 
                 entity.ToTable("tb_ClassList");
 
@@ -60,23 +60,21 @@ namespace CSG.Attendance.Api.Models.Mappings
                     .WithMany(p => p.TbClassList)
                     .HasForeignKey(d => d.ClassId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__tb_ClassL__Class__787EE5A0");
+                    .HasConstraintName("FK__tb_ClassL__Class__1CBC4616");
 
                 entity.HasOne(d => d.Learner)
                     .WithMany(p => p.TbClassList)
                     .HasForeignKey(d => d.LearnerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__tb_ClassL__Learn__797309D9");
+                    .HasConstraintName("FK__tb_ClassL__Learn__1DB06A4F");
             });
 
             modelBuilder.Entity<TbLearner>(entity =>
             {
                 entity.HasKey(e => e.LearnerId)
-                    .HasName("PK__tb_Learn__67ABFCDA97E84269");
+                    .HasName("PK__tb_Learn__67ABFCDAF9700F86");
 
                 entity.ToTable("tb_Learner");
-
-                entity.Property(e => e.LearnerId).ValueGeneratedNever();
 
                 entity.Property(e => e.Firstnames)
                     .IsRequired()
@@ -90,7 +88,7 @@ namespace CSG.Attendance.Api.Models.Mappings
             modelBuilder.Entity<TbTeacher>(entity =>
             {
                 entity.HasKey(e => e.TeacherId)
-                    .HasName("PK__tb_Teach__EDF25964F2544A00");
+                    .HasName("PK__tb_Teach__EDF25964FC6D118E");
 
                 entity.ToTable("tb_Teacher");
 

@@ -1,7 +1,9 @@
-﻿using CSG.Attendance.Api.Extensions;
+﻿using CSG.Attendance.Api.Exceptions;
+using CSG.Attendance.Api.Extensions;
 using CSG.Attendance.Api.Models;
 using CSG.Attendance.Api.Models.Mappings;
 using CSG.Attendance.Api.Models.Request;
+using CSG.Attendance.Api.Models.Response;
 using CSG.Attendance.Api.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -25,9 +27,12 @@ namespace CSG.Attendance.Api.Services
         private readonly IRepository<TbClass> classRepository;
         private readonly IStudentRepository studentRepository;
         private readonly IMemoryCacheService memoryCacheService;
+        private readonly IClassManagementRepository classManagementRepository;
+
+        private readonly string firebaseId;
 
         public ClassManagemenService(IHttpContextAccessor httpContext, IRepository<TbTeacher> teacherRepository, IRepository<TbClassList> classListRepository, IRepository<TbLearner> learnerRepository,
-                                     IRepository<TbClass> classRepository, IStudentRepository studentRepository, IMemoryCacheService memoryCacheService)
+                                     IRepository<TbClass> classRepository, IStudentRepository studentRepository, IMemoryCacheService memoryCacheService, IClassManagementRepository classManagementRepository)
         {
             this.httpContext = httpContext;
             this.teacherRepository = teacherRepository;
@@ -36,10 +41,36 @@ namespace CSG.Attendance.Api.Services
             this.classRepository = classRepository;
             this.studentRepository = studentRepository;
             this.memoryCacheService = memoryCacheService;
+            this.classManagementRepository = classManagementRepository;
+            this.firebaseId = this.httpContext?.HttpContext?.Items["firebaseid"]?.ToString();
+        }
+
+        public async Task DeleteClassAsync(int classId)
+        {
+            this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
+
+            if (!await this.EnsureClassBelongsToTeacherAsync(classId))
+            {
+                throw new ValidationException(classId.ToString(), "Failed to associate class (classId: {0}) with associated teacher.");
+            }
+
+            var cachedValue = this.memoryCacheService.RetrieveValue<string, TeacherCache>(this.firebaseId);
+
+            var isNullOrEmpty = cachedValue?.Classes.IsNullOrEmpty() ?? true;
+
+            if (!isNullOrEmpty)
+            {
+                cachedValue.Classes.Clear();
+                this.memoryCacheService.SetValue<string, TeacherCache>(this.firebaseId, cachedValue);
+            }
+
+            await this.classManagementRepository.RemoveClassAndClassListAsync(classId);
         }
 
         public async Task ClearAttendance(int classId)
         {
+            this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
+
             var firebaserUserId = this.httpContext.HttpContext.Items["firebaseid"].ToString();
 
             var teacher = await this.teacherRepository.FirstOrDefaultAsync(t => t.FirebaseUid == firebaserUserId);
@@ -53,6 +84,7 @@ namespace CSG.Attendance.Api.Services
 
         public async Task<List<Student>> GetAllRegistered(int classId)
         {
+            this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
             //add caching
 
             var firebaserUserId = this.httpContext.HttpContext.Items["firebaseid"].ToString();
@@ -71,18 +103,50 @@ namespace CSG.Attendance.Api.Services
             return classList;
         }
 
+        public async Task<List<ClassResponse>> GetClassSummary()
+        {
+            this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
+
+            var cachedValue = this.memoryCacheService.RetrieveValue<string, TeacherCache>(this.firebaseId);
+
+            var isNullOrEmpty = cachedValue?.Classes?.IsNullOrEmpty() ?? true;
+
+            if (!isNullOrEmpty)
+            {
+                return cachedValue.Classes;
+            }
+
+            var classListEntries = await this.classRepository.GetAllAsync(t => t.Teacher.FirebaseUid == this.firebaseId);
+
+            var classList = classListEntries.Select(cl => new ClassResponse
+            {
+                ClassId = cl.ClassId,
+                ClassDescription = cl.ClassDescription
+            }).ToList();
+
+            var teacher = await this.teacherRepository.FirstOrDefaultAsync(t => t.FirebaseUid == this.firebaseId);
+
+            var cache = new TeacherCache
+            {
+                TeacherId = teacher.TeacherId,
+                Classes = classList
+            };
+
+            this.memoryCacheService.SetValue<string, TeacherCache>(this.firebaseId, cache);
+
+            return classList;
+        }
+
         public async Task UpdateStudentsOnClassRegister(AddStudentRequest studentRequest)
         {
-            //boundary checks
+            await ValidateUpdateStudents(studentRequest);
 
             var studentUpdateList = new List<TbClassList>();
             var studentAddList = new List<TbClassList>();
 
-            var teacher = await this.teacherRepository.FirstOrDefaultAsync(t => t.FirebaseUid == studentRequest.FirebaseUserId);
-
             foreach (var student in studentRequest.Students)
             {
-                var studentEntry = await this.learnerRepository.FirstOrDefaultAsync(cl => cl.LearnerId == student.StudentId);
+                var studentEntry = student.StudentId == default ? null : await this.learnerRepository.FirstOrDefaultAsync(cl => cl.LearnerId == student.StudentId);
 
                 var classListUpdate = new TbClassList
                 {
@@ -95,9 +159,12 @@ namespace CSG.Attendance.Api.Services
                     classListUpdate.Learner = new TbLearner
                     {
                         Firstnames = student.Firstnames,
-                        Surname = student.Surname,
-                        LearnerId = student.StudentId
+                        Surname = student.Surname
                     };
+
+                    studentAddList.Add(classListUpdate);
+
+                    continue;
                 }
                 else
                 {
@@ -107,15 +174,16 @@ namespace CSG.Attendance.Api.Services
                 var classEntry = await this.classListRepository.FirstOrDefaultAsync(cl => cl.LearnerId == student.StudentId &&
                                                                                           cl.ClassId == studentRequest.ClassId);
 
-                if (classEntry != default)
+                if (classEntry == default)
                 {
+                    studentAddList.Add(classListUpdate);
+                }
+                else
+                {
+                    classEntry.Attendance = student.Attendance;
                     classEntry.Active = student.IsActive;
                     studentUpdateList.Add(classEntry);
-
-                    continue;
                 }
-
-                studentAddList.Add(classListUpdate);
             }
 
             if (studentAddList.Count > 0)
@@ -127,6 +195,43 @@ namespace CSG.Attendance.Api.Services
             {
                 await this.classListRepository.UpdateRangeAsync(studentUpdateList);
             }
+        }
+
+        private async Task ValidateUpdateStudents(AddStudentRequest studentRequest)
+        {
+            if (studentRequest.ClassId == default)
+            {
+                throw new ValidationException("ClassId");
+            }
+
+            if (studentRequest.Students.IsNullOrEmpty())
+            {
+                throw new ValidationException("Students");
+            }
+
+            foreach (var student in studentRequest.Students)
+            {
+                student.Firstnames = student.Firstnames?.Trim();
+                student.Surname = student.Surname?.Trim();
+
+                student.Firstnames.ThrowIfNullEmptyOrWhiteSpace("Firstnames");
+                student.Surname.ThrowIfNullEmptyOrWhiteSpace("Surname");
+
+                if (!student.IsActive && student.Attendance)
+                {
+                    student.Attendance = false;
+                }
+            }
+
+            if (!await this.EnsureClassBelongsToTeacherAsync(studentRequest.ClassId))
+            {
+                throw new ValidationException(studentRequest.ClassId.ToString(), "Failed to associate class (classId: {0}) with associated teacher.");
+            }
+        }
+
+        private Task<bool> EnsureClassBelongsToTeacherAsync(int classId)
+        {
+            return this.classRepository.ExistsAsync(cl => cl.Teacher.FirebaseUid == this.firebaseId && cl.ClassId == classId);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace CSG.Attendance.Api.Services
         {
             firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
 
-            var cachedValue = this.memoryCacheService.RetrieveValue<string, int>(firebaseId);
+            var cachedValue = this.memoryCacheService.RetrieveValue<string, TeacherCache>(firebaseId);
 
             if (cachedValue == default)
             {
@@ -47,7 +47,12 @@ namespace CSG.Attendance.Api.Services
                 }
                 else
                 {
-                    this.memoryCacheService.SetValue<string, int>(teacherExists.FirebaseUid, teacherExists.TeacherId);
+                    var cache = new TeacherCache
+                    {
+                        TeacherId = teacherExists.TeacherId
+                    };
+
+                    this.memoryCacheService.SetValue<string, TeacherCache>(teacherExists.FirebaseUid, cache);
                 }
             }
 

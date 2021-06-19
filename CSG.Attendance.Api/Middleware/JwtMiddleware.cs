@@ -52,9 +52,12 @@ namespace CSG.Attendance.Api.Middleware
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
 
-                context.Items["firebaseid"] = jwtToken.Claims.FirstOrDefault(c => c.Type == "firebaseid");
+                context.Items["firebaseid"] = jwtToken.Claims?.FirstOrDefault(c => c.Type == "firebaseid")?.Value;
             }
-            catch { }
+            catch (Exception e)
+            {
+
+            }
         }
     }
 }

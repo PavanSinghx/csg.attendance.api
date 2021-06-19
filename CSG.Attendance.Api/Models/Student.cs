@@ -14,5 +14,7 @@ namespace CSG.Attendance.Api.Models
         public string Firstnames { get; set; }
 
         public string Surname { get; set; }
+
+        public bool Attendance { get; set; }
     }
 }

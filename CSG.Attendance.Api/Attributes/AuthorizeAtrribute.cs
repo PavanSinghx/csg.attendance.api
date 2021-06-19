@@ -13,10 +13,10 @@ namespace CSG.Attendance.Api.Attributes
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var user = context.HttpContext.Items["firebaseUid"];
+            var user = context.HttpContext.Items["firebaseid"];
             if (user == default)
             {
-                context.Result = new JsonResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
+                context.Result = new UnauthorizedResult();
             }
         }
     }

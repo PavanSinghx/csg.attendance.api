@@ -1,5 +1,6 @@
 ﻿using CSG.Attendance.Api.Models;
 using CSG.Attendance.Api.Models.Mappings;
+using CSG.Attendance.Api.Models.Response;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -39,9 +40,9 @@ namespace CSG.Attendance.Api.Repositories
             return learnerTask;
         }
 
-        public Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(int teacherId)
+        public Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(string firebaseId)
         {
-            var learnerTask = this.attendanceContext.TbClassList.Where(cl => cl.Class.TeacherId == teacherId)
+            var learnerTask = this.attendanceContext.TbClassList.Where(cl => cl.Class.Teacher.FirebaseUid == firebaseId)
                                                                 .Select(l =>
                                                                 new Student
                                                                 {
@@ -50,6 +51,38 @@ namespace CSG.Attendance.Api.Repositories
                                                                     Attendance = l.Attendance,
                                                                     IsActive = l.Active,
                                                                     StudentId = l.Learner.LearnerId
+                                                                })
+                                                                .ToListAsync();
+
+            return learnerTask;
+        }
+
+        public Task<List<DailyClassGrade>> GetDailyClassGradeForStudentAsync(int studentId, DateTime startDate)
+        {
+            var learnerTask = this.attendanceContext.TbDailyClassListGrade.Where(cl => cl.LearnerId == studentId && cl.DayStart == startDate)
+                                                                          .Select(l =>
+                                                                          new DailyClassGrade
+                                                                          {
+                                                                              ClassId = l.ClassId,
+                                                                              ClassName = l.Class.ClassDescription,
+                                                                              DailyAttendance = l.DailyAttendance,
+                                                                              DayStart = l.DayStart,
+                                                                              Grade = l.Grade,
+                                                                              LearnerId = l.LearnerId
+                                                                          })
+                                                                          .ToListAsync();
+
+            return learnerTask;
+        }
+
+        public Task<List<ClassResponse>> GetAllClassesForStudentAsync(int studentId)
+        {
+            var learnerTask = this.attendanceContext.TbClassList.Where(cl => cl.LearnerId == studentId)
+                                                                .Select(l =>
+                                                                new ClassResponse
+                                                                {
+                                                                    ClassDescription = l.Class.ClassDescription,
+                                                                    ClassId = l.ClassId
                                                                 })
                                                                 .ToListAsync();
 

@@ -50,6 +50,8 @@ namespace CSG.Attendance.Api
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IStudentService, StudentService>();
+
             services.AddScoped<IClassManagementRepository, ClassManagementRepository>();
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();

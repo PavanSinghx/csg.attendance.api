@@ -8,6 +8,7 @@ namespace CSG.Attendance.Api.Models.Mappings
         public TbLearner()
         {
             TbClassList = new HashSet<TbClassList>();
+            TbDailyClassListGrade = new HashSet<TbDailyClassListGrade>();
         }
 
         public int LearnerId { get; set; }
@@ -15,5 +16,6 @@ namespace CSG.Attendance.Api.Models.Mappings
         public string Surname { get; set; }
 
         public virtual ICollection<TbClassList> TbClassList { get; set; }
+        public virtual ICollection<TbDailyClassListGrade> TbDailyClassListGrade { get; set; }
     }
 }

@@ -17,6 +17,7 @@ namespace CSG.Attendance.Api.Models.Mappings
 
         public virtual DbSet<TbClass> TbClass { get; set; }
         public virtual DbSet<TbClassList> TbClassList { get; set; }
+        public virtual DbSet<TbDailyClassListGrade> TbDailyClassListGrade { get; set; }
         public virtual DbSet<TbLearner> TbLearner { get; set; }
         public virtual DbSet<TbTeacher> TbTeacher { get; set; }
 
@@ -34,7 +35,7 @@ namespace CSG.Attendance.Api.Models.Mappings
             modelBuilder.Entity<TbClass>(entity =>
             {
                 entity.HasKey(e => e.ClassId)
-                    .HasName("PK__tb_Class__CB1927C07FB28765");
+                    .HasName("PK__tb_Class__CB1927C018C4EF6C");
 
                 entity.ToTable("tb_Class");
 
@@ -46,13 +47,13 @@ namespace CSG.Attendance.Api.Models.Mappings
                     .WithMany(p => p.TbClass)
                     .HasForeignKey(d => d.TeacherId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__tb_Class__Teache__19DFD96B");
+                    .HasConstraintName("FK__tb_Class__Teache__3F115E1A");
             });
 
             modelBuilder.Entity<TbClassList>(entity =>
             {
                 entity.HasKey(e => new { e.ClassId, e.LearnerId })
-                    .HasName("PK__tb_Class__7D63980D7BBDC4DA");
+                    .HasName("PK__tb_Class__7D63980DE60B4B3F");
 
                 entity.ToTable("tb_ClassList");
 
@@ -60,19 +61,41 @@ namespace CSG.Attendance.Api.Models.Mappings
                     .WithMany(p => p.TbClassList)
                     .HasForeignKey(d => d.ClassId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__tb_ClassL__Class__1CBC4616");
+                    .HasConstraintName("FK__tb_ClassL__Class__41EDCAC5");
 
                 entity.HasOne(d => d.Learner)
                     .WithMany(p => p.TbClassList)
                     .HasForeignKey(d => d.LearnerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__tb_ClassL__Learn__1DB06A4F");
+                    .HasConstraintName("FK__tb_ClassL__Learn__42E1EEFE");
+            });
+
+            modelBuilder.Entity<TbDailyClassListGrade>(entity =>
+            {
+                entity.HasKey(e => new { e.ClassId, e.LearnerId, e.DayStart })
+                    .HasName("PK__tb_Daily__0BE5A9C62FD24710");
+
+                entity.ToTable("tb_DailyClassListGrade");
+
+                entity.Property(e => e.DayStart).HasColumnType("datetime");
+
+                entity.HasOne(d => d.Class)
+                    .WithMany(p => p.TbDailyClassListGrade)
+                    .HasForeignKey(d => d.ClassId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__tb_DailyC__Class__489AC854");
+
+                entity.HasOne(d => d.Learner)
+                    .WithMany(p => p.TbDailyClassListGrade)
+                    .HasForeignKey(d => d.LearnerId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__tb_DailyC__Learn__498EEC8D");
             });
 
             modelBuilder.Entity<TbLearner>(entity =>
             {
                 entity.HasKey(e => e.LearnerId)
-                    .HasName("PK__tb_Learn__67ABFCDAF9700F86");
+                    .HasName("PK__tb_Learn__67ABFCDA9270F599");
 
                 entity.ToTable("tb_Learner");
 
@@ -88,7 +111,7 @@ namespace CSG.Attendance.Api.Models.Mappings
             modelBuilder.Entity<TbTeacher>(entity =>
             {
                 entity.HasKey(e => e.TeacherId)
-                    .HasName("PK__tb_Teach__EDF25964FC6D118E");
+                    .HasName("PK__tb_Teach__EDF25964AFAD9081");
 
                 entity.ToTable("tb_Teacher");
 

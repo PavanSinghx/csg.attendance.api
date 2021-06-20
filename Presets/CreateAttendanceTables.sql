@@ -6,6 +6,7 @@ GO
 
 USE attendancedb
 
+DROP TABLE IF EXISTS tb_DailyClassListGrade;
 DROP TABLE IF EXISTS tb_ClassList;
 DROP TABLE IF EXISTS tb_Class;
 DROP TABLE IF EXISTS tb_Teacher;
@@ -50,6 +51,19 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'tb_C
 		  Attendance BIT NOT NULL DEFAULT 0,
 		  Active BIT NOT NULL DEFAULT 0,
 		  PRIMARY KEY (ClassId, LearnerId)
+		);
+	END
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'tb_DailyClassListGrade')
+	BEGIN
+		CREATE TABLE tb_DailyClassListGrade (
+		  ClassId INT NOT NULL FOREIGN KEY REFERENCES tb_Class(ClassId),
+		  LearnerId INT NOT NULL FOREIGN KEY REFERENCES tb_Learner(LearnerId),
+		  DayStart DATETIME NOT NULL,
+		  Grade INT NOT NULL DEFAULT 0,
+		  DailyAttendance BIT NOT NULL DEFAULT 0
+		  PRIMARY KEY (ClassId, LearnerId, DayStart)
 		);
 	END
 GO

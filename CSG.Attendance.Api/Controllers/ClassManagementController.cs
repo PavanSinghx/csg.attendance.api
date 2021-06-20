@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSG.Attendance.Api.Attributes;
+using CSG.Attendance.Api.Models;
 using CSG.Attendance.Api.Models.Request;
 using CSG.Attendance.Api.Models.Response;
 using CSG.Attendance.Api.Services;
@@ -18,7 +19,7 @@ namespace CSG.Attendance.Api.Controllers
         private readonly IAuthenticationService authenticationService;
         private readonly IClassManagemenService classManagemenService;
 
-        public ClassManagementController(IAuthenticationService authenticationService, ITeacherService teacherService, IClassManagemenService classManagemenService)
+        public ClassManagementController(IAuthenticationService authenticationService, IClassManagemenService classManagemenService)
         {
             this.authenticationService = authenticationService;
             this.classManagemenService = classManagemenService;
@@ -49,11 +50,18 @@ namespace CSG.Attendance.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         [Route("{classId}")]
-        public async Task<object> CreateClassAsync(string firebaseid, int classId)
+        public async Task<List<Student>> GetClassLearnersAsync(int classId)
         {
-            return await authenticationService.GetJwtToken(firebaseid);
+            return await classManagemenService.GetAllRegistered(classId);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task CreateClassAsync([FromBody] CreateClassRequest classRequest)
+        {
+            await classManagemenService.CreateClassAsync(classRequest);
         }
 
         [Authorize]

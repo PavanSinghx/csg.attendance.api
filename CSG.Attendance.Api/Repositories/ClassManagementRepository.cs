@@ -26,7 +26,8 @@ namespace CSG.Attendance.Api.Repositories
                     var classWithClassList = this.attendanceContext.TbClass.Include(c => c.TbClassList)
                                                                            .FirstOrDefault(c => c.ClassId == classId);
 
-                    this.attendanceContext.RemoveRange(classWithClassList);
+                    this.attendanceContext.TbClassList.RemoveRange(classWithClassList.TbClassList);
+                    this.attendanceContext.TbClass.Remove(classWithClassList);
 
                     var saveChanges = await this.attendanceContext.SaveChangesAsync();
 

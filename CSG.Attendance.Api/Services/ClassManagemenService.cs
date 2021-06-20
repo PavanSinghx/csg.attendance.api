@@ -67,6 +67,36 @@ namespace CSG.Attendance.Api.Services
             await this.classManagementRepository.RemoveClassAndClassListAsync(classId);
         }
 
+        public async Task CreateClassAsync(CreateClassRequest classRequest)
+        {
+            this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
+
+            var teacher = await this.memoryCacheService.GetOrCreateAsync<string, TeacherCache>(this.firebaseId, async cacheEntry =>
+            {
+                var existingTeacher = await this.teacherRepository.FirstOrDefaultAsync(t => t.FirebaseUid == this.firebaseId);
+
+                var cache = new TeacherCache
+                {
+                    TeacherId = existingTeacher.TeacherId
+                };
+
+                return cache;
+            });
+
+            var classEntry = new TbClass
+            {
+                ClassDescription = classRequest.ClassDescription ?? "",
+                TeacherId = teacher.TeacherId
+            };
+
+            await this.classRepository.AddAsync(classEntry);
+
+            var teacherCache = this.memoryCacheService.RetrieveValue<string, TeacherCache>(this.firebaseId);
+            teacherCache.Classes?.Clear();
+
+            this.memoryCacheService.SetValue<string, TeacherCache>(this.firebaseId, teacherCache);
+        }
+
         public async Task ClearAttendance(int classId)
         {
             this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
@@ -85,22 +115,15 @@ namespace CSG.Attendance.Api.Services
         public async Task<List<Student>> GetAllRegistered(int classId)
         {
             this.firebaseId.ThrowIfNullEmptyOrWhiteSpace("FirebaseId");
-            //add caching
 
-            var firebaserUserId = this.httpContext.HttpContext.Items["firebaseid"].ToString();
-
-            var teacher = await this.teacherRepository.FirstOrDefaultAsync(t => t.FirebaseUid == firebaserUserId);
+            if (!await this.EnsureClassBelongsToTeacherAsync(classId))
+            {
+                throw new ValidationException(classId.ToString(), "Failed to associate class (classId: {0}) with associated teacher.");
+            }
 
             var classEntries = await this.studentRepository.GetAllRegisteredStudentsForClassAsync(classId);
 
-            var classList = classEntries.Select(cl => new Student
-            {
-                Firstnames = cl.Firstnames,
-                Surname = cl.Surname,
-                StudentId = cl.LearnerId
-            }).ToList();
-
-            return classList;
+            return classEntries;
         }
 
         public async Task<List<ClassResponse>> GetClassSummary()

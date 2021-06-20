@@ -22,16 +22,38 @@ namespace CSG.Attendance.Api.Repositories
             this.classListRepository = classListRepository;
         }
 
-        public Task<List<TbLearner>> GetAllRegisteredStudentsForClassAsync(int classId)
+        public Task<List<Student>> GetAllRegisteredStudentsForClassAsync(int classId)
         {
-            using (attendanceContext)
-            {
-                var learnerTask = this.attendanceContext.TbClassList.Where(l => l.ClassId == classId)
-                                                    .Select(l => l.Learner)
-                                                    .ToListAsync();
+            var learnerTask = this.attendanceContext.TbClassList.Where(l => l.ClassId == classId)
+                                                                .Select(l =>
+                                                                new Student
+                                                                {
+                                                                    Firstnames = l.Learner.Firstnames,
+                                                                    Surname = l.Learner.Surname,
+                                                                    Attendance = l.Attendance,
+                                                                    IsActive = l.Active,
+                                                                    StudentId = l.Learner.LearnerId
+                                                                })
+                                                                .ToListAsync();
 
-                return learnerTask;
-            }
+            return learnerTask;
+        }
+
+        public Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(int teacherId)
+        {
+            var learnerTask = this.attendanceContext.TbClassList.Where(cl => cl.Class.TeacherId == teacherId)
+                                                                .Select(l =>
+                                                                new Student
+                                                                {
+                                                                    Firstnames = l.Learner.Firstnames,
+                                                                    Surname = l.Learner.Surname,
+                                                                    Attendance = l.Attendance,
+                                                                    IsActive = l.Active,
+                                                                    StudentId = l.Learner.LearnerId
+                                                                })
+                                                                .ToListAsync();
+
+            return learnerTask;
         }
     }
 }

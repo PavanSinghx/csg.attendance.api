@@ -57,6 +57,13 @@ namespace CSG.Attendance.Api
 
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
 
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
             services.AddControllers();
         }
 
@@ -77,6 +84,8 @@ namespace CSG.Attendance.Api
             app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseMiddleware<JwtMiddleware>();
+
+            app.UseCors("MyPolicy");
 
             app.UseEndpoints(endpoints =>
             {

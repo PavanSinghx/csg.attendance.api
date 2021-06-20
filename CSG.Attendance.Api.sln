@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSG.Attendance.Api", "CSG.Attendance.Api\CSG.Attendance.Api.csproj", "{87ADBF15-BB5B-4543-9A17-2F82508E05AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSG.Attendance.Api", "CSG.Attendance.Api\CSG.Attendance.Api.csproj", "{87ADBF15-BB5B-4543-9A17-2F82508E05AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSG.Attendance.Api.Tests", "CSG.Attendance.Api.Tests\CSG.Attendance.Api.Tests.csproj", "{A77C06AA-CC64-44F2-B75C-B4565FC85852}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{87ADBF15-BB5B-4543-9A17-2F82508E05AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87ADBF15-BB5B-4543-9A17-2F82508E05AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87ADBF15-BB5B-4543-9A17-2F82508E05AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A77C06AA-CC64-44F2-B75C-B4565FC85852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A77C06AA-CC64-44F2-B75C-B4565FC85852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A77C06AA-CC64-44F2-B75C-B4565FC85852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A77C06AA-CC64-44F2-B75C-B4565FC85852}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

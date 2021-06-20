@@ -23,9 +23,11 @@ namespace CSG.Attendance.Api.Repositories
             {
                 try
                 {
-                    var classWithClassList = this.attendanceContext.TbClass.Include(c => c.TbClassList)
+                    var classWithClassList = this.attendanceContext.TbClass.Include(c => c.TbDailyClassListGrade)
+                                                                           .Include(c => c.TbClassList)
                                                                            .FirstOrDefault(c => c.ClassId == classId);
 
+                    this.attendanceContext.TbDailyClassListGrade.RemoveRange(classWithClassList.TbDailyClassListGrade);
                     this.attendanceContext.TbClassList.RemoveRange(classWithClassList.TbClassList);
                     this.attendanceContext.TbClass.Remove(classWithClassList);
 

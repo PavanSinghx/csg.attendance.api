@@ -30,9 +30,13 @@ namespace CSG.Attendance.Api.Services
             this.firebaseId = this.httpContext?.HttpContext?.Items["firebaseid"]?.ToString();
         }
 
-        public Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync()
+        public async Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync()
         {
-            return this.studentRepository.GetAllRegisteredStudentsForTeacherAsync(this.firebaseId);
+            var students = await this.studentRepository.GetAllRegisteredStudentsForTeacherAsync(this.firebaseId);
+
+            var distinctStudents = students.GroupBy(s => s.StudentId).Select(s => s.First()).ToList();
+
+            return distinctStudents;
         }
 
         public async Task<List<DailyClassGrade>> GetDailyClassGradesAsync(int studentId, string startDate)

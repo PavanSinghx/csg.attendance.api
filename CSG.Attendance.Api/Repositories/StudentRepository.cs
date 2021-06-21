@@ -43,16 +43,16 @@ namespace CSG.Attendance.Api.Repositories
         public async Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(string firebaseId)
         {
             var learnerTask = await this.attendanceContext.TbClassList.Where(cl => cl.Class.Teacher.FirebaseUid == firebaseId)
-                                                                .Select(l =>
-                                                                new Student
-                                                                {
-                                                                    Firstnames = l.Learner.Firstnames,
-                                                                    Surname = l.Learner.Surname,
-                                                                    Attendance = l.Attendance,
-                                                                    IsActive = l.Active,
-                                                                    StudentId = l.Learner.LearnerId
-                                                                })
-                                                                .ToListAsync();
+                                                                        .Select(l =>
+                                                                        new Student
+                                                                        {
+                                                                            Firstnames = l.Learner.Firstnames,
+                                                                            Surname = l.Learner.Surname,
+                                                                            Attendance = l.Attendance,
+                                                                            IsActive = l.Active,
+                                                                            StudentId = l.Learner.LearnerId
+                                                                        })
+                                                                        .ToListAsync();
 
             return learnerTask;
         }

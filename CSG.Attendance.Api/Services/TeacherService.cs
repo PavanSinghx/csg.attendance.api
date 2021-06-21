@@ -80,7 +80,7 @@ namespace CSG.Attendance.Api.Services
                 var classEntry = new TbClass
                 {
                     TeacherId = teacher.TeacherId,
-                    ClassDescription = ""
+                    ClassDescription = RandomString(6)
                 };
 
                 classEntryList.Add(classEntry);
@@ -101,6 +101,14 @@ namespace CSG.Attendance.Api.Services
             };
 
             this.memoryCacheService.SetValue<string, TeacherCache>(registerTeacher.FirebaseUserId, cache);
+        }
+
+        private static string RandomString(int length)
+        {
+            return Guid.NewGuid().ToString()
+                                 .Replace("-", string.Empty)
+                                 .Replace("+", string.Empty)
+                                 .Substring(0, length).ToUpper();
         }
     }
 }

@@ -9,8 +9,8 @@ namespace CSG.Attendance.Api.Exceptions
     {
         const string message = "Time string {0} is invalid";
 
-        public InvalidDateTimeException(string firebaseUid, string details = message)
-        : base(string.Format(details, firebaseUid))
+        public InvalidDateTimeException(string date, string details = message)
+        : base(string.Format(details, date))
         {
 
         }

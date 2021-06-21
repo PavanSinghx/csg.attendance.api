@@ -131,5 +131,74 @@ namespace CSG.Attendance.Api.Services
             }
         }
 
+        public async Task<List<StudentSummaryResponse>> AggregateDailyClassReportAsync(int studentId, string startDate, string endDate)
+        {
+            var hasParsedStartDate = DateTime.TryParse(startDate, out var parsedStartingDate);
+
+            if (!hasParsedStartDate)
+            {
+                throw new InvalidDateTimeException(startDate);
+            }
+
+            var hasParsedparsedEndingDate = DateTime.TryParse(endDate, out var parsedEndingDate);
+
+            if (!hasParsedparsedEndingDate)
+            {
+                throw new InvalidDateTimeException(endDate);
+            }
+
+            if (parsedStartingDate >= parsedEndingDate)
+            {
+                throw new InvalidDateTimeException($"{startDate} {endDate}", "Start dates must be less than end dates: {0}");
+            }
+
+            var dailyGrades = await this.studentRepository.GetDailyPeriodReportAsync(studentId, parsedStartingDate, parsedEndingDate);
+
+            var gradeGroups = dailyGrades.GroupBy(g => g.ClassId);
+
+            var studentReportSummary = new List<StudentSummaryResponse>(gradeGroups.Count());
+
+            foreach (var group in gradeGroups)
+            {
+                var summary = new StudentSummaryResponse
+                {
+                    DaysAttended = 0,
+                    DaysMissed = 0,
+                    Grade = 0.0
+                };
+
+                var elementCount = group.Count();
+
+                foreach (var dailyClass in group)
+                {
+                    summary.Grade += dailyClass.Grade;
+
+                    if (dailyClass.DailyAttendance)
+                    {
+                        summary.DaysAttended++;
+                    }
+                    else
+                    {
+                        summary.DaysMissed++;
+                    }
+                }
+
+                if (elementCount > 0)
+                {
+                    summary.Grade /= elementCount;
+                    summary.Grade = Math.Round(summary.Grade * 100.0);
+                    summary.Grade /= 100.0;
+                    summary.ClassName = group.First()?.Class?.ClassDescription;
+                }
+                else
+                {
+                    summary.Grade = 0;
+                }
+
+                studentReportSummary.Add(summary);
+            }
+
+            return studentReportSummary;
+        }
     }
 }

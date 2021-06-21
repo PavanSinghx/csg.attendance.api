@@ -23,9 +23,9 @@ namespace CSG.Attendance.Api.Repositories
             this.classListRepository = classListRepository;
         }
 
-        public Task<List<Student>> GetAllRegisteredStudentsForClassAsync(int classId)
+        public async Task<List<Student>> GetAllRegisteredStudentsForClassAsync(int classId)
         {
-            var learnerTask = this.attendanceContext.TbClassList.Where(l => l.ClassId == classId)
+            var learnerTask = await this.attendanceContext.TbClassList.Where(l => l.ClassId == classId)
                                                                 .Select(l =>
                                                                 new Student
                                                                 {
@@ -40,9 +40,9 @@ namespace CSG.Attendance.Api.Repositories
             return learnerTask;
         }
 
-        public Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(string firebaseId)
+        public async Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(string firebaseId)
         {
-            var learnerTask = this.attendanceContext.TbClassList.Where(cl => cl.Class.Teacher.FirebaseUid == firebaseId)
+            var learnerTask = await this.attendanceContext.TbClassList.Where(cl => cl.Class.Teacher.FirebaseUid == firebaseId)
                                                                 .Select(l =>
                                                                 new Student
                                                                 {
@@ -57,9 +57,9 @@ namespace CSG.Attendance.Api.Repositories
             return learnerTask;
         }
 
-        public Task<List<DailyClassGrade>> GetDailyClassGradeForStudentAsync(int studentId, DateTime startDate)
+        public async Task<List<DailyClassGrade>> GetDailyClassGradeForStudentAsync(int studentId, DateTime startDate)
         {
-            var learnerTask = this.attendanceContext.TbDailyClassListGrade.Where(cl => cl.LearnerId == studentId && cl.DayStart == startDate)
+            var learnerTask = await this.attendanceContext.TbDailyClassListGrade.Where(cl => cl.LearnerId == studentId && cl.DayStart == startDate)
                                                                           .Select(l =>
                                                                           new DailyClassGrade
                                                                           {
@@ -74,9 +74,9 @@ namespace CSG.Attendance.Api.Repositories
             return learnerTask;
         }
 
-        public Task<List<ClassResponse>> GetAllClassesForStudentAsync(int studentId)
+        public async Task<List<ClassResponse>> GetAllClassesForStudentAsync(int studentId)
         {
-            var learnerTask = this.attendanceContext.TbClassList.Where(cl => cl.LearnerId == studentId)
+            var learnerTask = await this.attendanceContext.TbClassList.Where(cl => cl.LearnerId == studentId)
                                                                 .Select(l =>
                                                                 new ClassResponse
                                                                 {
@@ -84,6 +84,17 @@ namespace CSG.Attendance.Api.Repositories
                                                                     ClassId = l.ClassId
                                                                 })
                                                                 .ToListAsync();
+
+            return learnerTask;
+        }
+
+        public async Task<List<TbDailyClassListGrade>> GetDailyPeriodReportAsync(int studentId, DateTime startDate, DateTime endDate)
+        {
+            var learnerTask = await this.attendanceContext.TbDailyClassListGrade.Include(cl => cl.Class)
+                                                                                .Where(cl => cl.LearnerId == studentId &&
+                                                                                       cl.DayStart <= endDate &&
+                                                                                       cl.DayStart >= startDate)
+                                                                                .ToListAsync();
 
             return learnerTask;
         }

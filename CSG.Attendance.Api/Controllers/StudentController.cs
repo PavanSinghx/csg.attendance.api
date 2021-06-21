@@ -1,4 +1,5 @@
 ﻿using CSG.Attendance.Api.Models;
+using CSG.Attendance.Api.Models.Response;
 using CSG.Attendance.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -30,6 +31,13 @@ namespace CSG.Attendance.Api.Controllers
         public async Task<List<DailyClassGrade>> GetStudentsAsync(int studentId, string dateTime)
         {
             return await this.studentService.GetDailyClassGradesAsync(studentId, dateTime);
+        }
+
+        [HttpGet]
+        [Route("studentid/{studentId}/startdate/{startDate}/enddate/{endDate}/report")]
+        public async Task<List<StudentSummaryResponse>> GetStudentReport(int studentId, string startDate, string endDate)
+        {
+            return await this.studentService.AggregateDailyClassReportAsync(studentId, startDate, endDate);
         }
 
         [HttpPut]

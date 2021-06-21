@@ -7,10 +7,12 @@ namespace CSG.Attendance.Api.Models.Response
 {
     public class StudentSummaryResponse
     {
-        public int AttendancePercentage { get; set; }
+        public string ClassName { get; set; }
 
-        public decimal Grade { get; set; }
+        public double Grade { get; set; }
 
-        List<ClassResponse> Classes { get; set; }
+        public int DaysAttended { get; set; }
+
+        public int DaysMissed { get; set; }
     }
 }

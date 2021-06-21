@@ -13,5 +13,6 @@ namespace CSG.Attendance.Api.Repositories
         Task<List<Student>> GetAllRegisteredStudentsForTeacherAsync(string firebaseId);
         Task<List<DailyClassGrade>> GetDailyClassGradeForStudentAsync(int studentId, DateTime startDate);
         Task<List<ClassResponse>> GetAllClassesForStudentAsync(int studentId);
+        Task<List<TbDailyClassListGrade>> GetDailyPeriodReportAsync(int studentId, DateTime startDate, DateTime endDate);
     }
 }

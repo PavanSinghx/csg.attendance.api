@@ -26,10 +26,17 @@ namespace CSG.Attendance.Api.Controllers
         }
 
         [HttpGet]
-        [Route("studentid/{studentId}")]
-        public async Task<List<DailyClassGrade>> GetStudentsAsync(int studentId)
+        [Route("studentid/{studentId}/date/{dateTime}")]
+        public async Task<List<DailyClassGrade>> GetStudentsAsync(int studentId, string dateTime)
         {
-            return await this.studentService.GetDailyClassGradesAsync(studentId);
+            return await this.studentService.GetDailyClassGradesAsync(studentId, dateTime);
+        }
+
+        [HttpPut]
+        [Route("grade")]
+        public async Task AddStudentGradeAttendanceAsync([FromBody] List<DailyClassGrade> dailyClasses)
+        {
+            await this.studentService.UpdateStudentGradeAttendanceAsync(dailyClasses);
         }
     }
 }

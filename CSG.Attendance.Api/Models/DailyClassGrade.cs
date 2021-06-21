@@ -13,7 +13,7 @@ namespace CSG.Attendance.Api.Models
 
         public string ClassName { get; set; }
 
-        public DateTime DayStart { get; set; }
+        public string DayStart { get; set; }
 
         public int Grade { get; set; }
 

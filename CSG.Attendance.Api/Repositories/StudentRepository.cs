@@ -66,7 +66,6 @@ namespace CSG.Attendance.Api.Repositories
                                                                               ClassId = l.ClassId,
                                                                               ClassName = l.Class.ClassDescription,
                                                                               DailyAttendance = l.DailyAttendance,
-                                                                              DayStart = l.DayStart,
                                                                               Grade = l.Grade,
                                                                               LearnerId = l.LearnerId
                                                                           })

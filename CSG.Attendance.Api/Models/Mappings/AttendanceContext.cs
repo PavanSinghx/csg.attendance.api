@@ -23,11 +23,6 @@ namespace CSG.Attendance.Api.Models.Mappings
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=attendancedb;Data Source=DESKTOP-9FRBPQ0");
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
